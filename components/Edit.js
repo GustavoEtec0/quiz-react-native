@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Image, Button, TextInput, View, Alert } from 'react-native'
+import { Image, Button, TextInput, View, Alert, Text } from 'react-native'
 import * as SQLlite from 'expo-sqlite'
 
 const db = SQLlite.openDatabase('quiz.db')
@@ -11,11 +11,8 @@ export default function Edit() {
     const [alternativaB, setAlternativaB] = useState('')
     const [alternativaC, setAlternativaC] = useState('')
     const [alternativaD, setAlternativaD] = useState('')
+    const [registros, setRegistros] = useState('')
     const [respostaCorreta, setRespostaCorreta] = useState('')
-
-    useEffect(() => {
-        carregarPergunta()
-    }, [])
 
     const carregarPergunta = () => {
         db.transaction((tx) => {
@@ -111,12 +108,35 @@ export default function Edit() {
         })
     }
 
+    const countRecords = () => {
+        db.transaction((tx) => {
+            tx.executeSql(
+                'SELECT COUNT(*) as count FROM perguntas',
+                [],
+                (_, { rows }) => {
+                    const row = rows.item(0)
+                    setRegistros(row.count)
+                },
+                (tx, error) => {
+                    console.log('Error: ' + error)
+                }
+            )
+        })
+    }
+
+    useEffect(() => {
+        carregarPergunta()
+    }, [])
+
+    countRecords()
+
     return (
         <View style={{ alignItems: 'center' }}>
             <Image
                 source={require('../assets/logo.png')}
                 style={{ width: '90%', height: 150, marginBottom: 45 }}
             />
+            <Text>numero de perguntas: {registros}</Text>
             <TextInput
                 placeholder="Digite a pergunta"
                 value={pergunta}
